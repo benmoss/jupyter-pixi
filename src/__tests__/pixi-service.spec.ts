@@ -98,4 +98,35 @@ describe('PixiService', () => {
   it('should stop current task', async () => {
     await expect(service.stopCurrentTask()).resolves.not.toThrow();
   });
+
+  it('should initialize a new project', async () => {
+    const config = {
+      name: 'test-project',
+      description: 'A test project',
+      pythonVersion: '3.11',
+      initialPackages: ['numpy', 'pandas']
+    };
+    
+    await expect(service.initializeProject(config)).resolves.not.toThrow();
+  });
+
+  it('should edit configuration', async () => {
+    await expect(service.editConfiguration()).resolves.not.toThrow();
+  });
+
+  it('should reinitialize project', async () => {
+    await expect(service.reinitializeProject()).resolves.not.toThrow();
+  });
+
+  it('should export configuration', async () => {
+    const config = await service.exportConfiguration();
+    
+    expect(config).toBeDefined();
+    expect(config.name).toBe('demo-pixi-project');
+    expect(config.description).toBe('A demo pixi project');
+    expect(config.pythonVersion).toBe('3.11');
+    expect(config.environments).toEqual(['default', 'dev', 'test']);
+    expect(config.packages).toEqual(['python', 'numpy', 'pandas']);
+    expect(config.tasks).toEqual(['test', 'build', 'dev', 'shell']);
+  });
 }); 

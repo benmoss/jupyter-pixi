@@ -382,3 +382,83 @@
 .jp-pixi-clear-btn:hover {
   background: #e0a800 !important;
 }
+
+.jp-pixi-project-details {
+  display: grid;
+  gap: 10px;
+}
+
+.jp-pixi-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  border: 1px solid var(--jp-pixi-border-color);
+}
+
+.jp-pixi-detail-item label {
+  font-weight: 500;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-detail-item span {
+  color: var(--jp-pixi-primary-color);
+  font-weight: 500;
+}
+
+.jp-pixi-config-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.jp-pixi-form-group {
+  margin-bottom: 15px;
+}
+
+.jp-pixi-form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-form-group input,
+.jp-pixi-form-group textarea,
+.jp-pixi-form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--jp-pixi-border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.jp-pixi-form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.jp-pixi-form-group select {
+  background: white;
+}
+
+.jp-pixi-success-message,
+.jp-pixi-error-message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.jp-pixi-success-message {
+  background: var(--jp-pixi-success-color);
+  color: white;
+}
+
+.jp-pixi-error-message {
+  background: var(--jp-pixi-error-color);
+  color: white;
+}

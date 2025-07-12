@@ -262,4 +262,97 @@ describe('PixiWidget', () => {
       }, 50);
     }, 100);
   });
+
+  it('should render the project setup UI when showSetup is called', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const header = widget.node.querySelector('.jp-pixi-header h2');
+      expect(header?.textContent).toBe('Project Configuration');
+      done();
+    }, 100);
+  });
+
+  it('should call initializeProject when form is submitted', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const initSpy = jest.spyOn(widget as any, 'initializeProject');
+      const form = widget.node.querySelector('#jp-pixi-init-form') as HTMLFormElement;
+      const nameInput = widget.node.querySelector('#jp-pixi-project-name') as HTMLInputElement;
+      
+      if (form && nameInput) {
+        nameInput.value = 'test-project';
+        form.dispatchEvent(new Event('submit'));
+        setTimeout(() => {
+          expect(initSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Form not available in existing project setup
+      }
+    }, 100);
+  });
+
+  it('should call editConfiguration when edit config button is clicked', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const editSpy = jest.spyOn(widget as any, 'editConfiguration');
+      const editBtn = widget.node.querySelector('#jp-pixi-edit-config') as HTMLButtonElement;
+      if (editBtn) {
+        editBtn.click();
+        setTimeout(() => {
+          expect(editSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Button not available in new project setup
+      }
+    }, 100);
+  });
+
+  it('should call reinitializeProject when reinit button is clicked', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const reinitSpy = jest.spyOn(widget as any, 'reinitializeProject');
+      const reinitBtn = widget.node.querySelector('#jp-pixi-reinit') as HTMLButtonElement;
+      if (reinitBtn) {
+        reinitBtn.click();
+        setTimeout(() => {
+          expect(reinitSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Button not available in new project setup
+      }
+    }, 100);
+  });
+
+  it('should call exportConfiguration when export button is clicked', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const exportSpy = jest.spyOn(widget as any, 'exportConfiguration');
+      const exportBtn = widget.node.querySelector('#jp-pixi-export') as HTMLButtonElement;
+      if (exportBtn) {
+        exportBtn.click();
+        setTimeout(() => {
+          expect(exportSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Button not available in new project setup
+      }
+    }, 100);
+  });
+
+  it('should return to project info when back button is clicked in project setup', done => {
+    widget.showSetup();
+    setTimeout(() => {
+      const backBtn = widget.node.querySelector('#jp-pixi-back-btn') as HTMLButtonElement;
+      const loadSpy = jest.spyOn(widget as any, 'loadProjectInfo');
+      backBtn.click();
+      setTimeout(() => {
+        expect(loadSpy).toHaveBeenCalled();
+        done();
+      }, 50);
+    }, 100);
+  });
 }); 

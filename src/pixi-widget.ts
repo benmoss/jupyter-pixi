@@ -24,6 +24,7 @@ export class PixiWidget extends Widget {
     const environmentsBtn = this.contentDiv.querySelector('#environments-btn');
     const packagesBtn = this.contentDiv.querySelector('#packages-btn');
     const tasksBtn = this.contentDiv.querySelector('#tasks-btn');
+    const setupBtn = this.contentDiv.querySelector('#setup-btn');
 
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => this.refreshProject());
@@ -36,6 +37,9 @@ export class PixiWidget extends Widget {
     }
     if (tasksBtn) {
       tasksBtn.addEventListener('click', () => this.showTasks());
+    }
+    if (setupBtn) {
+      setupBtn.addEventListener('click', () => this.showSetup());
     }
   }
 
@@ -78,6 +82,7 @@ export class PixiWidget extends Widget {
             <button class="jp-pixi-button" id="environments-btn">Manage Environments</button>
             <button class="jp-pixi-button" id="packages-btn">Manage Packages</button>
             <button class="jp-pixi-button" id="tasks-btn">Run Tasks</button>
+            <button class="jp-pixi-button" id="setup-btn">Project Setup</button>
           </div>
         </div>
       </div>
@@ -110,6 +115,205 @@ export class PixiWidget extends Widget {
 
   public showTasks(): void {
     this.renderTaskManager();
+  }
+
+  public showSetup(): void {
+    this.renderProjectSetup();
+  }
+
+  private renderProjectSetup(): void {
+    // Get current project info to determine if we're in a pixi project
+    this.pixiService.getProjectInfo().then((projectInfo: any) => {
+      if (projectInfo.isPixiProject) {
+        this.renderExistingProjectSetup(projectInfo);
+      } else {
+        this.renderNewProjectSetup();
+      }
+    });
+  }
+
+  private renderExistingProjectSetup(projectInfo: any): void {
+    this.contentDiv.innerHTML = `
+      <div class="jp-pixi-header">
+        <h2>Project Configuration</h2>
+      </div>
+      <div class="jp-pixi-section">
+        <h3>Current Project: ${projectInfo.name}</h3>
+        <div class="jp-pixi-project-details">
+          <div class="jp-pixi-detail-item">
+            <label>Project Name:</label>
+            <span>${projectInfo.name}</span>
+          </div>
+          <div class="jp-pixi-detail-item">
+            <label>Current Environment:</label>
+            <span>${projectInfo.currentEnvironment}</span>
+          </div>
+          <div class="jp-pixi-detail-item">
+            <label>Environments:</label>
+            <span>${projectInfo.environments?.length || 0} configured</span>
+          </div>
+          <div class="jp-pixi-detail-item">
+            <label>Packages:</label>
+            <span>${projectInfo.packages?.length || 0} installed</span>
+          </div>
+        </div>
+      </div>
+      <div class="jp-pixi-section">
+        <h3>Configuration Options</h3>
+        <div class="jp-pixi-config-actions">
+          <button class="jp-pixi-button" id="jp-pixi-edit-config">Edit Configuration</button>
+          <button class="jp-pixi-button" id="jp-pixi-reinit">Re-initialize Project</button>
+          <button class="jp-pixi-button" id="jp-pixi-export">Export Configuration</button>
+        </div>
+      </div>
+      <div class="jp-pixi-section">
+        <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
+      </div>
+    `;
+    this.setupProjectSetupListeners();
+  }
+
+  private renderNewProjectSetup(): void {
+    this.contentDiv.innerHTML = `
+      <div class="jp-pixi-header">
+        <h2>Initialize New Pixi Project</h2>
+      </div>
+      <div class="jp-pixi-section">
+        <h3>Project Information</h3>
+        <form id="jp-pixi-init-form">
+          <div class="jp-pixi-form-group">
+            <label for="jp-pixi-project-name">Project Name:</label>
+            <input type="text" id="jp-pixi-project-name" placeholder="my-pixi-project" required />
+          </div>
+          <div class="jp-pixi-form-group">
+            <label for="jp-pixi-project-description">Description:</label>
+            <textarea id="jp-pixi-project-description" placeholder="A brief description of your project"></textarea>
+          </div>
+          <div class="jp-pixi-form-group">
+            <label for="jp-pixi-python-version">Python Version:</label>
+            <select id="jp-pixi-python-version">
+              <option value="3.9">Python 3.9</option>
+              <option value="3.10">Python 3.10</option>
+              <option value="3.11" selected>Python 3.11</option>
+              <option value="3.12">Python 3.12</option>
+            </select>
+          </div>
+          <div class="jp-pixi-form-group">
+            <label for="jp-pixi-initial-packages">Initial Packages:</label>
+            <input type="text" id="jp-pixi-initial-packages" placeholder="numpy, pandas, matplotlib" />
+          </div>
+          <button type="submit" class="jp-pixi-button">Initialize Project</button>
+        </form>
+      </div>
+      <div class="jp-pixi-section">
+        <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
+      </div>
+    `;
+    this.setupProjectSetupListeners();
+  }
+
+  private setupProjectSetupListeners(): void {
+    // Back button
+    const backBtn = this.contentDiv.querySelector('#jp-pixi-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.loadProjectInfo());
+    }
+
+    // Initialize project form
+    const initForm = this.contentDiv.querySelector('#jp-pixi-init-form');
+    if (initForm) {
+      initForm.addEventListener('submit', (event: Event) => {
+        event.preventDefault();
+        this.initializeProject();
+      });
+    }
+
+    // Configuration buttons
+    const editConfigBtn = this.contentDiv.querySelector('#jp-pixi-edit-config');
+    if (editConfigBtn) {
+      editConfigBtn.addEventListener('click', () => this.editConfiguration());
+    }
+
+    const reinitBtn = this.contentDiv.querySelector('#jp-pixi-reinit');
+    if (reinitBtn) {
+      reinitBtn.addEventListener('click', () => this.reinitializeProject());
+    }
+
+    const exportBtn = this.contentDiv.querySelector('#jp-pixi-export');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => this.exportConfiguration());
+    }
+  }
+
+  private async initializeProject(): Promise<void> {
+    const projectName = (this.contentDiv.querySelector('#jp-pixi-project-name') as HTMLInputElement)?.value;
+    const description = (this.contentDiv.querySelector('#jp-pixi-project-description') as HTMLTextAreaElement)?.value;
+    const pythonVersion = (this.contentDiv.querySelector('#jp-pixi-python-version') as HTMLSelectElement)?.value;
+    const initialPackages = (this.contentDiv.querySelector('#jp-pixi-initial-packages') as HTMLInputElement)?.value;
+
+    if (!projectName) {
+      this.showError('Project name is required');
+      return;
+    }
+
+    try {
+      await this.pixiService.initializeProject({
+        name: projectName,
+        description: description || '',
+        pythonVersion,
+        initialPackages: initialPackages ? initialPackages.split(',').map(p => p.trim()) : []
+      });
+      
+      this.showSuccess('Project initialized successfully!');
+      setTimeout(() => this.loadProjectInfo(), 2000);
+    } catch (error) {
+      this.showError('Failed to initialize project: ' + error);
+    }
+  }
+
+  private async editConfiguration(): Promise<void> {
+    try {
+      await this.pixiService.editConfiguration();
+      this.showSuccess('Configuration opened for editing');
+    } catch (error) {
+      this.showError('Failed to open configuration: ' + error);
+    }
+  }
+
+  private async reinitializeProject(): Promise<void> {
+    try {
+      await this.pixiService.reinitializeProject();
+      this.showSuccess('Project re-initialized successfully!');
+      setTimeout(() => this.loadProjectInfo(), 2000);
+    } catch (error) {
+      this.showError('Failed to re-initialize project: ' + error);
+    }
+  }
+
+  private async exportConfiguration(): Promise<void> {
+    try {
+      const config = await this.pixiService.exportConfiguration();
+      this.showSuccess('Configuration exported successfully');
+      console.log('Exported configuration:', config);
+    } catch (error) {
+      this.showError('Failed to export configuration: ' + error);
+    }
+  }
+
+  private showSuccess(message: string): void {
+    this.contentDiv.innerHTML += `
+      <div class="jp-pixi-success-message">
+        <span>✅ ${message}</span>
+      </div>
+    `;
+  }
+
+  private showError(message: string): void {
+    this.contentDiv.innerHTML += `
+      <div class="jp-pixi-error-message">
+        <span>❌ ${message}</span>
+      </div>
+    `;
   }
 
   private renderPackageManager(): void {
