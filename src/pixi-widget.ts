@@ -96,8 +96,7 @@ export class PixiWidget extends Widget {
   }
 
   public showEnvironments(): void {
-    // TODO: Implement environment management UI
-    console.log('Show environments');
+    this.renderEnvironmentManager();
   }
 
   public showPackages(): void {
@@ -178,5 +177,86 @@ export class PixiWidget extends Widget {
     // Simulate removing a package
     await this.pixiService.executePixiCommand('remove', [pkg]);
     this.renderPackageManager();
+  }
+
+  private renderEnvironmentManager(): void {
+    // Get current project info to access environments
+    this.pixiService.getProjectInfo().then((projectInfo: any) => {
+      this.contentDiv.innerHTML = `
+        <div class="jp-pixi-header">
+          <h2>Manage Environments</h2>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Available Environments</h3>
+          <div class="jp-pixi-environment-list">
+            ${projectInfo.environments?.map((env: string) => `
+              <div class="jp-pixi-environment-item ${env === projectInfo.currentEnvironment ? 'jp-pixi-current-env' : ''}">
+                <span class="jp-pixi-env-name">${env}</span>
+                <div class="jp-pixi-env-actions">
+                  ${env !== projectInfo.currentEnvironment ? 
+                    `<button class="jp-pixi-switch-btn" data-env="${env}">Switch</button>` : 
+                    '<span class="jp-pixi-current-label">Current</span>'
+                  }
+                </div>
+              </div>
+            `).join('') || '<p>No environments found</p>'}
+          </div>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Create New Environment</h3>
+          <form id="jp-pixi-create-env-form">
+            <input type="text" id="jp-pixi-create-env-input" placeholder="Environment name" required />
+            <button type="submit" class="jp-pixi-button">Create Environment</button>
+          </form>
+        </div>
+        <div class="jp-pixi-section">
+          <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
+        </div>
+      `;
+      this.setupEnvironmentManagerListeners();
+    });
+  }
+
+  private setupEnvironmentManagerListeners(): void {
+    // Switch environment buttons
+    const switchBtns = this.contentDiv.querySelectorAll('.jp-pixi-switch-btn');
+    switchBtns.forEach(btn => {
+      btn.addEventListener('click', (event: Event) => {
+        const env = (event.target as HTMLButtonElement).getAttribute('data-env');
+        if (env) {
+          this.switchEnvironment(env);
+        }
+      });
+    });
+
+    // Create environment form
+    const createForm = this.contentDiv.querySelector('#jp-pixi-create-env-form') as HTMLFormElement;
+    if (createForm) {
+      createForm.addEventListener('submit', (event: Event) => {
+        event.preventDefault();
+        const input = this.contentDiv.querySelector('#jp-pixi-create-env-input') as HTMLInputElement;
+        if (input && input.value.trim()) {
+          this.createEnvironment(input.value.trim());
+        }
+      });
+    }
+
+    // Back button
+    const backBtn = this.contentDiv.querySelector('#jp-pixi-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.loadProjectInfo());
+    }
+  }
+
+  private async switchEnvironment(env: string): Promise<void> {
+    // Simulate switching environment
+    await this.pixiService.executePixiCommand('env', ['switch', env]);
+    this.renderEnvironmentManager();
+  }
+
+  private async createEnvironment(env: string): Promise<void> {
+    // Simulate creating a new environment
+    await this.pixiService.executePixiCommand('env', ['create', env]);
+    this.renderEnvironmentManager();
   }
 } 

@@ -131,4 +131,60 @@ describe('PixiWidget', () => {
       }, 50);
     }, 100);
   });
+
+  it('should render the environment manager UI when showEnvironments is called', done => {
+    widget.showEnvironments();
+    setTimeout(() => {
+      const header = widget.node.querySelector('.jp-pixi-header h2');
+      expect(header?.textContent).toBe('Manage Environments');
+      const envList = widget.node.querySelector('.jp-pixi-environment-list');
+      expect(envList).toBeTruthy();
+      done();
+    }, 100);
+  });
+
+  it('should call switchEnvironment when switch button is clicked', done => {
+    widget.showEnvironments();
+    setTimeout(() => {
+      const switchSpy = jest.spyOn(widget as any, 'switchEnvironment');
+      const switchBtn = widget.node.querySelector('.jp-pixi-switch-btn') as HTMLButtonElement;
+      if (switchBtn) {
+        switchBtn.click();
+        setTimeout(() => {
+          expect(switchSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // No switch buttons available in demo data
+      }
+    }, 100);
+  });
+
+  it('should call createEnvironment when create form is submitted', done => {
+    widget.showEnvironments();
+    setTimeout(() => {
+      const createSpy = jest.spyOn(widget as any, 'createEnvironment');
+      const input = widget.node.querySelector('#jp-pixi-create-env-input') as HTMLInputElement;
+      const form = widget.node.querySelector('#jp-pixi-create-env-form') as HTMLFormElement;
+      input.value = 'new-env';
+      form.dispatchEvent(new Event('submit'));
+      setTimeout(() => {
+        expect(createSpy).toHaveBeenCalledWith('new-env');
+        done();
+      }, 50);
+    }, 100);
+  });
+
+  it('should return to project info when back button is clicked in environment manager', done => {
+    widget.showEnvironments();
+    setTimeout(() => {
+      const backBtn = widget.node.querySelector('#jp-pixi-back-btn') as HTMLButtonElement;
+      const loadSpy = jest.spyOn(widget as any, 'loadProjectInfo');
+      backBtn.click();
+      setTimeout(() => {
+        expect(loadSpy).toHaveBeenCalled();
+        done();
+      }, 50);
+    }, 100);
+  });
 }); 

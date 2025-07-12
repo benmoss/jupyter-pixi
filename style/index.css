@@ -224,3 +224,71 @@
   border-radius: 4px;
   font-size: 14px;
 }
+
+.jp-pixi-environment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jp-pixi-environment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--jp-layout-color0);
+  border: 1px solid var(--jp-pixi-border-color);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+.jp-pixi-current-env {
+  border-color: var(--jp-pixi-primary-color);
+  background: var(--jp-layout-color1);
+}
+
+.jp-pixi-env-name {
+  font-weight: 500;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-env-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jp-pixi-switch-btn {
+  background: var(--jp-pixi-primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.jp-pixi-switch-btn:hover {
+  background: #005a9e;
+}
+
+.jp-pixi-current-label {
+  color: var(--jp-pixi-success-color);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+#jp-pixi-create-env-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#jp-pixi-create-env-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--jp-pixi-border-color);
+  border-radius: 4px;
+  font-size: 14px;
+}
