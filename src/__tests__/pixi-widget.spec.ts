@@ -19,8 +19,7 @@ describe('PixiWidget', () => {
     expect(widget.node.classList.contains('jp-pixi-widget')).toBe(true);
   });
 
-  it('should render project information', () => {
-    // Wait for the async loadProjectInfo to complete
+  it('should render project information', done => {
     setTimeout(() => {
       const content = widget.node.querySelector('.jp-pixi-content');
       expect(content).toBeTruthy();
@@ -30,10 +29,11 @@ describe('PixiWidget', () => {
       
       const actions = content?.querySelector('.jp-pixi-actions');
       expect(actions).toBeTruthy();
+      done();
     }, 100);
   });
 
-  it('should have action buttons', () => {
+  it('should have action buttons', done => {
     setTimeout(() => {
       const refreshBtn = widget.node.querySelector('#refresh-btn');
       const environmentsBtn = widget.node.querySelector('#environments-btn');
@@ -46,39 +46,89 @@ describe('PixiWidget', () => {
       expect(refreshBtn?.textContent).toBe('Refresh Project');
       expect(environmentsBtn?.textContent).toBe('Manage Environments');
       expect(packagesBtn?.textContent).toBe('Manage Packages');
+      done();
     }, 100);
   });
 
-  it('should handle refresh button click', () => {
+  it('should handle refresh button click', done => {
     const mockRefreshProject = jest.spyOn(widget, 'refreshProject');
-    
     setTimeout(() => {
       const refreshBtn = widget.node.querySelector('#refresh-btn') as HTMLButtonElement;
       refreshBtn?.click();
-      
       expect(mockRefreshProject).toHaveBeenCalled();
+      done();
     }, 100);
   });
 
-  it('should handle environments button click', () => {
+  it('should handle environments button click', done => {
     const mockShowEnvironments = jest.spyOn(widget, 'showEnvironments');
-    
     setTimeout(() => {
       const environmentsBtn = widget.node.querySelector('#environments-btn') as HTMLButtonElement;
       environmentsBtn?.click();
-      
       expect(mockShowEnvironments).toHaveBeenCalled();
+      done();
     }, 100);
   });
 
-  it('should handle packages button click', () => {
+  it('should handle packages button click', done => {
     const mockShowPackages = jest.spyOn(widget, 'showPackages');
-    
     setTimeout(() => {
       const packagesBtn = widget.node.querySelector('#packages-btn') as HTMLButtonElement;
       packagesBtn?.click();
-      
       expect(mockShowPackages).toHaveBeenCalled();
+      done();
+    }, 100);
+  });
+
+  it('should render the package manager UI when showPackages is called', done => {
+    widget.showPackages();
+    setTimeout(() => {
+      const header = widget.node.querySelector('.jp-pixi-header h2');
+      expect(header?.textContent).toBe('Manage Packages');
+      const packageList = widget.node.querySelector('.jp-pixi-package-list');
+      expect(packageList).toBeTruthy();
+      done();
+    }, 100);
+  });
+
+  it('should call addPackage when add form is submitted', done => {
+    widget.showPackages();
+    setTimeout(() => {
+      const addSpy = jest.spyOn(widget as any, 'addPackage');
+      const input = widget.node.querySelector('#jp-pixi-add-package-input') as HTMLInputElement;
+      const form = widget.node.querySelector('#jp-pixi-add-package-form') as HTMLFormElement;
+      input.value = 'pytest';
+      form.dispatchEvent(new Event('submit'));
+      setTimeout(() => {
+        expect(addSpy).toHaveBeenCalledWith('pytest');
+        done();
+      }, 50);
+    }, 100);
+  });
+
+  it('should call removePackage when remove button is clicked', done => {
+    widget.showPackages();
+    setTimeout(() => {
+      const removeSpy = jest.spyOn(widget as any, 'removePackage');
+      const removeBtn = widget.node.querySelector('.jp-pixi-remove-btn') as HTMLButtonElement;
+      removeBtn.click();
+      setTimeout(() => {
+        expect(removeSpy).toHaveBeenCalled();
+        done();
+      }, 50);
+    }, 100);
+  });
+
+  it('should return to project info when back button is clicked', done => {
+    widget.showPackages();
+    setTimeout(() => {
+      const backBtn = widget.node.querySelector('#jp-pixi-back-btn') as HTMLButtonElement;
+      const loadSpy = jest.spyOn(widget as any, 'loadProjectInfo');
+      backBtn.click();
+      setTimeout(() => {
+        expect(loadSpy).toHaveBeenCalled();
+        done();
+      }, 50);
     }, 100);
   });
 }); 

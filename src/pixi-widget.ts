@@ -101,7 +101,82 @@ export class PixiWidget extends Widget {
   }
 
   public showPackages(): void {
-    // TODO: Implement package management UI
-    console.log('Show packages');
+    this.renderPackageManager();
+  }
+
+  private renderPackageManager(): void {
+    // Get the current packages from the service (simulate for now)
+    this.pixiService.getInstalledPackages().then((packages: string[]) => {
+      this.contentDiv.innerHTML = `
+        <div class="jp-pixi-header">
+          <h2>Manage Packages</h2>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Installed Packages</h3>
+          <ul class="jp-pixi-package-list">
+            ${packages.map(pkg => `
+              <li class="jp-pixi-package-item">
+                <span>${pkg}</span>
+                <button class="jp-pixi-remove-btn" data-pkg="${pkg}">Remove</button>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Add a Package</h3>
+          <form id="jp-pixi-add-package-form">
+            <input type="text" id="jp-pixi-add-package-input" placeholder="Package name" required />
+            <button type="submit" class="jp-pixi-button">Add Package</button>
+          </form>
+        </div>
+        <div class="jp-pixi-section">
+          <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
+        </div>
+      `;
+      this.setupPackageManagerListeners();
+    });
+  }
+
+  private setupPackageManagerListeners(): void {
+    // Remove package buttons
+    const removeBtns = this.contentDiv.querySelectorAll('.jp-pixi-remove-btn');
+    removeBtns.forEach(btn => {
+      btn.addEventListener('click', (event: Event) => {
+        const pkg = (event.target as HTMLButtonElement).getAttribute('data-pkg');
+        if (pkg) {
+          this.removePackage(pkg);
+        }
+      });
+    });
+
+    // Add package form
+    const addForm = this.contentDiv.querySelector('#jp-pixi-add-package-form') as HTMLFormElement;
+    if (addForm) {
+      addForm.addEventListener('submit', (event: Event) => {
+        event.preventDefault();
+        const input = this.contentDiv.querySelector('#jp-pixi-add-package-input') as HTMLInputElement;
+        if (input && input.value.trim()) {
+          this.addPackage(input.value.trim());
+        }
+      });
+    }
+
+    // Back button
+    const backBtn = this.contentDiv.querySelector('#jp-pixi-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.loadProjectInfo());
+    }
+  }
+
+  private async addPackage(pkg: string): Promise<void> {
+    // Simulate adding a package
+    await this.pixiService.executePixiCommand('add', [pkg]);
+    this.renderPackageManager();
+  }
+
+  private async removePackage(pkg: string): Promise<void> {
+    // Simulate removing a package
+    await this.pixiService.executePixiCommand('remove', [pkg]);
+    this.renderPackageManager();
   }
 } 

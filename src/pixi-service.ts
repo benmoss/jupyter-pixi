@@ -95,7 +95,7 @@ export class PixiService {
     }
   }
 
-  private async getInstalledPackages(): Promise<string[]> {
+  public async getInstalledPackages(): Promise<string[]> {
     try {
       // This would list installed packages
       // For now, return demo packages
