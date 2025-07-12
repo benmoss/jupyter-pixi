@@ -43,6 +43,25 @@ export class PixiWidget extends Widget {
     }
   }
 
+  private setupFeatureToggleListeners(): void {
+    this.contentDiv.querySelectorAll('.jp-pixi-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', (event) => {
+        const featureName = (event.target as HTMLElement).getAttribute('data-feature');
+        const featureDiv = this.contentDiv.querySelector(`.jp-pixi-feature-packages[data-feature='${featureName}']`);
+        const extraDiv = featureDiv?.querySelector('.jp-pixi-package-extra') as HTMLElement;
+        if (extraDiv) {
+          if (extraDiv.style.display === 'none') {
+            extraDiv.style.display = '';
+            (event.target as HTMLElement).textContent = 'Show less';
+          } else {
+            extraDiv.style.display = 'none';
+            (event.target as HTMLElement).textContent = 'Show more';
+          }
+        }
+      });
+    });
+  }
+
   private async loadProjectInfo(): Promise<void> {
     try {
       const projectInfo = await this.pixiService.getProjectInfo();
@@ -71,7 +90,15 @@ export class PixiWidget extends Widget {
             </div>
             <div class="jp-pixi-info-item">
               <label>Available Environments:</label>
-              <span>${projectInfo.environments?.join(', ') || 'None'}</span>
+              <span>${projectInfo.environments?.map((env: any) => env.name).join(', ') || 'None'}</span>
+            </div>
+            <div class="jp-pixi-info-item">
+              <label>Features:</label>
+              <span>${projectInfo.features?.map((feature: any) => feature.name).join(', ') || 'None'}</span>
+            </div>
+            <div class="jp-pixi-info-item">
+              <label>Total Packages:</label>
+              <span>${projectInfo.features?.reduce((total: number, feature: any) => total + feature.packages.length, 0) || 0} across all features</span>
             </div>
           </div>
         </div>
@@ -88,6 +115,7 @@ export class PixiWidget extends Widget {
       </div>
     `;
     this.setupEventListeners();
+    this.setupFeatureToggleListeners();
   }
 
   private renderError(message: string): void {
@@ -317,46 +345,76 @@ export class PixiWidget extends Widget {
   }
 
   private renderPackageManager(): void {
-    // Get the current packages from the service (simulate for now)
-    this.pixiService.getInstalledPackages().then((packages: string[]) => {
+    // Get the current project info to access environments and their packages
+    this.pixiService.getProjectInfo().then(async (projectInfo: any) => {
+      const currentEnv = projectInfo.currentEnvironment;
+      
+      // Get packages for current environment
+      const packages = await this.pixiService.getInstalledPackages(currentEnv);
+      
+      // Get features for current environment
+      const features = await this.pixiService.getFeaturesForEnvironment(currentEnv);
+      
       this.contentDiv.innerHTML = `
         <div class="jp-pixi-header">
           <h2>Manage Packages</h2>
         </div>
         <div class="jp-pixi-section">
-          <h3>Installed Packages</h3>
-          <ul class="jp-pixi-package-list">
-            ${packages.map(pkg => `
+          <h3>Current Environment: ${currentEnv}</h3>
+          <div class="jp-pixi-package-list">
+            ${packages.map((pkg: any) => `
               <li class="jp-pixi-package-item">
-                <span>${pkg}</span>
-                <button class="jp-pixi-remove-btn" data-pkg="${pkg}">Remove</button>
+                <div class="jp-pixi-package-info">
+                  <span class="jp-pixi-package-name">${pkg.name}${pkg.version ? `@${pkg.version}` : ''}</span>
+                  <span class="jp-pixi-package-source">from features: ${this.getPackageSourceFeatures(pkg, features)}</span>
+                </div>
+                <button class="jp-pixi-remove-btn" data-pkg="${pkg.name}" data-env="${currentEnv}">Remove</button>
               </li>
-            `).join('')}
-          </ul>
+            `).join('') || '<p>No packages in current environment</p>'}
+          </div>
         </div>
         <div class="jp-pixi-section">
-          <h3>Add a Package</h3>
+          <h3>Add Package to ${currentEnv}</h3>
           <form id="jp-pixi-add-package-form">
             <input type="text" id="jp-pixi-add-package-input" placeholder="Package name" required />
             <button type="submit" class="jp-pixi-button">Add Package</button>
           </form>
         </div>
         <div class="jp-pixi-section">
+          <h3>Environment Features</h3>
+          <div class="jp-pixi-env-features-list">
+            ${features.map((feature: any) => `
+              <div class="jp-pixi-feature-detail">
+                <span class="jp-pixi-feature-name">${feature.name}${feature.isDefault ? ' (default)' : ''}</span>
+                <span class="jp-pixi-package-count">${feature.packages.length} packages</span>
+              </div>
+            `).join('') || '<p>No features found</p>'}
+          </div>
+        </div>
+        <div class="jp-pixi-section">
           <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
         </div>
       `;
-      this.setupPackageManagerListeners();
+      this.setupPackageManagerListeners(currentEnv);
     });
   }
 
-  private setupPackageManagerListeners(): void {
+  private getPackageSourceFeatures(pkg: any, features: any[]): string {
+    const sourceFeatures = features.filter(feature => 
+      feature.packages.some((packageItem: any) => packageItem.name === pkg.name)
+    );
+    return sourceFeatures.map(f => f.name).join(', ');
+  }
+
+  private setupPackageManagerListeners(currentEnv?: string): void {
     // Remove package buttons
     const removeBtns = this.contentDiv.querySelectorAll('.jp-pixi-remove-btn');
     removeBtns.forEach(btn => {
       btn.addEventListener('click', (event: Event) => {
         const pkg = (event.target as HTMLButtonElement).getAttribute('data-pkg');
-        if (pkg) {
-          this.removePackage(pkg);
+        const env = (event.target as HTMLButtonElement).getAttribute('data-env');
+        if (pkg && env) {
+          this.removePackage(pkg, env);
         }
       });
     });
@@ -367,8 +425,8 @@ export class PixiWidget extends Widget {
       addForm.addEventListener('submit', (event: Event) => {
         event.preventDefault();
         const input = this.contentDiv.querySelector('#jp-pixi-add-package-input') as HTMLInputElement;
-        if (input && input.value.trim()) {
-          this.addPackage(input.value.trim());
+        if (input && input.value.trim() && currentEnv) {
+          this.addPackage(input.value.trim(), currentEnv);
         }
       });
     }
@@ -380,15 +438,15 @@ export class PixiWidget extends Widget {
     }
   }
 
-  private async addPackage(pkg: string): Promise<void> {
-    // Simulate adding a package
-    await this.pixiService.executePixiCommand('add', [pkg]);
+  private async addPackage(pkg: string, env: string): Promise<void> {
+    // Simulate adding a package to a specific environment
+    await this.pixiService.executePixiCommand('add', [pkg, `--env`, env]);
     this.renderPackageManager();
   }
 
-  private async removePackage(pkg: string): Promise<void> {
-    // Simulate removing a package
-    await this.pixiService.executePixiCommand('remove', [pkg]);
+  private async removePackage(pkg: string, env: string): Promise<void> {
+    // Simulate removing a package from a specific environment
+    await this.pixiService.executePixiCommand('remove', [pkg, `--env`, env]);
     this.renderPackageManager();
   }
 
@@ -402,17 +460,51 @@ export class PixiWidget extends Widget {
         <div class="jp-pixi-section">
           <h3>Available Environments</h3>
           <div class="jp-pixi-environment-list">
-            ${projectInfo.environments?.map((env: string) => `
-              <div class="jp-pixi-environment-item ${env === projectInfo.currentEnvironment ? 'jp-pixi-current-env' : ''}">
-                <span class="jp-pixi-env-name">${env}</span>
-                <div class="jp-pixi-env-actions">
-                  ${env !== projectInfo.currentEnvironment ? 
-                    `<button class="jp-pixi-switch-btn" data-env="${env}">Switch</button>` : 
-                    '<span class="jp-pixi-current-label">Current</span>'
-                  }
+            ${projectInfo.environments?.map((env: any) => {
+              const features = projectInfo.features?.filter((f: any) => env.features.includes(f.name)) || [];
+              const inheritedFeatures = env.inheritDefault !== false && env.name !== 'default' ? 
+                projectInfo.features?.find((f: any) => f.isDefault) : null;
+              
+              return `
+                <div class="jp-pixi-environment-item ${env.name === projectInfo.currentEnvironment ? 'jp-pixi-current-env' : ''}">
+                  <div class="jp-pixi-env-info">
+                    <span class="jp-pixi-env-name">${env.name}${env.name === 'default' ? ' (default)' : ''}</span>
+                    <div class="jp-pixi-env-features">
+                      <span class="jp-pixi-features-label">Features: ${features.map((f: any) => f.name).join(', ')}</span>
+                      ${inheritedFeatures ? `<span class="jp-pixi-inherited">+ inherited from default</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="jp-pixi-env-actions">
+                    ${env.name !== projectInfo.currentEnvironment ? 
+                      `<button class="jp-pixi-switch-btn" data-env="${env.name}">Switch</button>` : 
+                      '<span class="jp-pixi-current-label">Current</span>'
+                    }
+                  </div>
+                </div>
+              `;
+            }).join('') || '<p>No environments found</p>'}
+          </div>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Features Overview</h3>
+          <div class="jp-pixi-features-overview">
+            ${projectInfo.features?.map((feature: any) => `
+              <div class="jp-pixi-feature-item">
+                <div class="jp-pixi-feature-info">
+                  <span class="jp-pixi-feature-name">${feature.name}${feature.isDefault ? ' (default)' : ''}</span>
+                  <span class="jp-pixi-package-count">${feature.packages.length} packages</span>
+                </div>
+                <div class="jp-pixi-feature-packages" data-feature="${feature.name}">
+                  ${feature.packages.slice(0, 5).map((pkg: any) => 
+                    `<div class="jp-pixi-package-tag">${pkg.name}${pkg.version ? `@${pkg.version}` : ''}</div>`
+                  ).join('')}
+                  ${feature.packages.length > 5 ? `<button class="jp-pixi-toggle-btn" data-feature="${feature.name}">Show more</button>` : ''}
+                  <div class="jp-pixi-package-extra" style="display:none">${feature.packages.slice(5).map((pkg: any) =>
+                    `<div class="jp-pixi-package-tag">${pkg.name}${pkg.version ? `@${pkg.version}` : ''}</div>`
+                  ).join('')}</div>
                 </div>
               </div>
-            `).join('') || '<p>No environments found</p>'}
+            `).join('') || '<p>No features found</p>'}
           </div>
         </div>
         <div class="jp-pixi-section">
@@ -427,6 +519,7 @@ export class PixiWidget extends Widget {
         </div>
       `;
       this.setupEnvironmentManagerListeners();
+      this.setupFeatureToggleListeners();
     });
   }
 
@@ -465,12 +558,14 @@ export class PixiWidget extends Widget {
     // Simulate switching environment
     await this.pixiService.executePixiCommand('env', ['switch', env]);
     this.renderEnvironmentManager();
+    this.renderPackageManager(); // Re-render package manager to show packages for the new environment
   }
 
   private async createEnvironment(env: string): Promise<void> {
     // Simulate creating a new environment
     await this.pixiService.executePixiCommand('env', ['create', env]);
     this.renderEnvironmentManager();
+    this.renderPackageManager(); // Re-render package manager to show packages for the new environment
   }
 
   private renderTaskManager(): void {

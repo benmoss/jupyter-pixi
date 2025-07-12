@@ -18,8 +18,75 @@ describe('PixiService', () => {
     expect(projectInfo.isPixiProject).toBe(true);
     expect(projectInfo.name).toBe('demo-pixi-project');
     expect(projectInfo.currentEnvironment).toBe('default');
-    expect(projectInfo.environments).toEqual(['default', 'dev', 'test']);
-    expect(projectInfo.packages).toEqual(['python', 'numpy', 'pandas']);
+    expect(projectInfo.environments).toEqual([
+      {
+        name: 'default',
+        features: ['default'],
+        inheritDefault: false
+      },
+      {
+        name: 'dev',
+        features: ['default', 'dev-tools'],
+        inheritDefault: true
+      },
+      {
+        name: 'test',
+        features: ['default', 'testing'],
+        inheritDefault: true
+      },
+      {
+        name: 'python310',
+        features: ['python310'],
+        inheritDefault: true
+      },
+      {
+        name: 'python311',
+        features: ['python311'],
+        inheritDefault: true
+      }
+    ]);
+    expect(projectInfo.features).toEqual([
+      {
+        name: 'default',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ],
+        isDefault: true
+      },
+      {
+        name: 'dev-tools',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'black', version: '23.7' },
+          { name: 'flake8', version: '6.0' }
+        ]
+      },
+      {
+        name: 'testing',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'coverage', version: '7.2' }
+        ]
+      },
+      {
+        name: 'python310',
+        packages: [
+          { name: 'python', version: '3.10' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      },
+      {
+        name: 'python311',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      }
+    ]);
   });
 
   it('should handle project info when not in a pixi project', async () => {
@@ -32,7 +99,7 @@ describe('PixiService', () => {
     expect(projectInfo.name).toBeUndefined();
     expect(projectInfo.currentEnvironment).toBeUndefined();
     expect(projectInfo.environments).toEqual([]);
-    expect(projectInfo.packages).toEqual([]);
+    expect(projectInfo.features).toEqual([]);
   });
 
   it('should execute pixi commands', async () => {
@@ -58,14 +125,125 @@ describe('PixiService', () => {
     expect(currentEnvironment).toBe('default');
   });
 
-  it('should get available environments', async () => {
-    const environments = await (service as any).getAvailableEnvironments();
-    expect(environments).toEqual(['default', 'dev', 'test']);
+  it('should get environments with features', async () => {
+    const environments = await (service as any).getEnvironmentsWithFeatures();
+    expect(environments).toEqual([
+      {
+        name: 'default',
+        features: ['default'],
+        inheritDefault: false
+      },
+      {
+        name: 'dev',
+        features: ['default', 'dev-tools'],
+        inheritDefault: true
+      },
+      {
+        name: 'test',
+        features: ['default', 'testing'],
+        inheritDefault: true
+      },
+      {
+        name: 'python310',
+        features: ['python310'],
+        inheritDefault: true
+      },
+      {
+        name: 'python311',
+        features: ['python311'],
+        inheritDefault: true
+      }
+    ]);
   });
 
-  it('should get installed packages', async () => {
-    const packages = await (service as any).getInstalledPackages();
-    expect(packages).toEqual(['python', 'numpy', 'pandas']);
+  it('should get features with packages', async () => {
+    const features = await (service as any).getFeaturesWithPackages();
+    expect(features).toEqual([
+      {
+        name: 'default',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ],
+        isDefault: true
+      },
+      {
+        name: 'dev-tools',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'black', version: '23.7' },
+          { name: 'flake8', version: '6.0' }
+        ]
+      },
+      {
+        name: 'testing',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'coverage', version: '7.2' }
+        ]
+      },
+      {
+        name: 'python310',
+        packages: [
+          { name: 'python', version: '3.10' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      },
+      {
+        name: 'python311',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      }
+    ]);
+  });
+
+  it('should get installed packages for current environment', async () => {
+    const packages = await service.getInstalledPackages();
+    expect(packages).toEqual([
+      { name: 'python', version: '3.11' },
+      { name: 'numpy', version: '1.24' },
+      { name: 'pandas', version: '2.0' }
+    ]);
+  });
+
+  it('should get installed packages for dev environment with inheritance', async () => {
+    const packages = await service.getInstalledPackages('dev');
+    expect(packages).toEqual([
+      { name: 'python', version: '3.11' },
+      { name: 'numpy', version: '1.24' },
+      { name: 'pandas', version: '2.0' },
+      { name: 'pytest', version: '7.4' },
+      { name: 'black', version: '23.7' },
+      { name: 'flake8', version: '6.0' }
+    ]);
+  });
+
+  it('should get features for environment', async () => {
+    const features = await service.getFeaturesForEnvironment('dev');
+    expect(features).toEqual([
+      {
+        name: 'default',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ],
+        isDefault: true
+      },
+      {
+        name: 'dev-tools',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'black', version: '23.7' },
+          { name: 'flake8', version: '6.0' }
+        ]
+      }
+    ]);
   });
 
   it('should get available tasks', async () => {
@@ -125,8 +303,75 @@ describe('PixiService', () => {
     expect(config.name).toBe('demo-pixi-project');
     expect(config.description).toBe('A demo pixi project');
     expect(config.pythonVersion).toBe('3.11');
-    expect(config.environments).toEqual(['default', 'dev', 'test']);
-    expect(config.packages).toEqual(['python', 'numpy', 'pandas']);
+    expect(config.environments).toEqual([
+      {
+        name: 'default',
+        features: ['default'],
+        inheritDefault: false
+      },
+      {
+        name: 'dev',
+        features: ['default', 'dev-tools'],
+        inheritDefault: true
+      },
+      {
+        name: 'test',
+        features: ['default', 'testing'],
+        inheritDefault: true
+      },
+      {
+        name: 'python310',
+        features: ['python310'],
+        inheritDefault: true
+      },
+      {
+        name: 'python311',
+        features: ['python311'],
+        inheritDefault: true
+      }
+    ]);
+    expect(config.features).toEqual([
+      {
+        name: 'default',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ],
+        isDefault: true
+      },
+      {
+        name: 'dev-tools',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'black', version: '23.7' },
+          { name: 'flake8', version: '6.0' }
+        ]
+      },
+      {
+        name: 'testing',
+        packages: [
+          { name: 'pytest', version: '7.4' },
+          { name: 'coverage', version: '7.2' }
+        ]
+      },
+      {
+        name: 'python310',
+        packages: [
+          { name: 'python', version: '3.10' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      },
+      {
+        name: 'python311',
+        packages: [
+          { name: 'python', version: '3.11' },
+          { name: 'numpy', version: '1.24' },
+          { name: 'pandas', version: '2.0' }
+        ]
+      }
+    ]);
     expect(config.tasks).toEqual(['test', 'build', 'dev', 'shell']);
   });
 }); 

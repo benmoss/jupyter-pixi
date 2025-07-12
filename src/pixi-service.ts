@@ -1,8 +1,27 @@
+export interface PixiPackage {
+  name: string;
+  version?: string;
+  channel?: string;
+}
+
+export interface PixiFeature {
+  name: string;
+  packages: PixiPackage[];
+  isDefault?: boolean;
+}
+
+export interface PixiEnvironment {
+  name: string;
+  features: string[]; // Feature names that this environment uses
+  inheritDefault?: boolean; // Whether to inherit from default environment (default: true)
+  packages?: PixiPackage[]; // Direct packages (if any)
+}
+
 export interface PixiProjectInfo {
   name?: string;
   currentEnvironment?: string;
-  environments?: string[];
-  packages?: string[];
+  environments?: PixiEnvironment[];
+  features?: PixiFeature[];
   isPixiProject: boolean;
 }
 
@@ -20,7 +39,7 @@ export class PixiService {
           name: undefined,
           currentEnvironment: undefined,
           environments: [],
-          packages: []
+          features: []
         };
       }
 
@@ -30,18 +49,16 @@ export class PixiService {
       // Get current environment
       const currentEnvironment = await this.getCurrentEnvironment();
       
-      // Get available environments
-      const environments = await this.getAvailableEnvironments();
-      
-      // Get installed packages
-      const packages = await this.getInstalledPackages();
+      // Get available environments and features
+      const environments = await this.getEnvironmentsWithFeatures();
+      const features = await this.getFeaturesWithPackages();
 
       return {
         isPixiProject: true,
         name: projectName,
         currentEnvironment,
         environments,
-        packages
+        features
       };
     } catch (error) {
       console.error('Error getting project info:', error);
@@ -50,7 +67,7 @@ export class PixiService {
         name: undefined,
         currentEnvironment: undefined,
         environments: [],
-        packages: []
+        features: []
       };
     }
   }
@@ -85,21 +102,155 @@ export class PixiService {
     }
   }
 
-  private async getAvailableEnvironments(): Promise<string[]> {
+  private async getEnvironmentsWithFeatures(): Promise<PixiEnvironment[]> {
     try {
-      // This would list all available environments
-      // For now, return demo environments
-      return ['default', 'dev', 'test'];
+      // This would read from pixi.toml to get environments and their features
+      // For now, return demo environments with features
+      return [
+        {
+          name: 'default',
+          features: ['default'],
+          inheritDefault: false // Default environment doesn't inherit from itself
+        },
+        {
+          name: 'dev',
+          features: ['default', 'dev-tools'],
+          inheritDefault: true
+        },
+        {
+          name: 'test',
+          features: ['default', 'testing'],
+          inheritDefault: true
+        },
+        {
+          name: 'python310',
+          features: ['python310'],
+          inheritDefault: true
+        },
+        {
+          name: 'python311',
+          features: ['python311'],
+          inheritDefault: true
+        }
+      ];
     } catch (error) {
       return [];
     }
   }
 
-  public async getInstalledPackages(): Promise<string[]> {
+  private async getFeaturesWithPackages(): Promise<PixiFeature[]> {
     try {
-      // This would list installed packages
-      // For now, return demo packages
-      return ['python', 'numpy', 'pandas'];
+      // This would read from pixi.toml to get features and their packages
+      // For now, return demo features with packages
+      return [
+        {
+          name: 'default',
+          packages: [
+            { name: 'python', version: '3.11' },
+            { name: 'numpy', version: '1.24' },
+            { name: 'pandas', version: '2.0' },
+            { name: 'scipy', version: '1.10' },
+            { name: 'matplotlib', version: '3.7' },
+            { name: 'seaborn', version: '0.12' },
+            { name: 'requests', version: '2.31' }
+          ],
+          isDefault: true
+        },
+        {
+          name: 'dev-tools',
+          packages: [
+            { name: 'pytest', version: '7.4' },
+            { name: 'black', version: '23.7' },
+            { name: 'flake8', version: '6.0' }
+          ]
+        },
+        {
+          name: 'testing',
+          packages: [
+            { name: 'pytest', version: '7.4' },
+            { name: 'coverage', version: '7.2' }
+          ]
+        },
+        {
+          name: 'python310',
+          packages: [
+            { name: 'python', version: '3.10' },
+            { name: 'numpy', version: '1.24' },
+            { name: 'pandas', version: '2.0' }
+          ]
+        },
+        {
+          name: 'python311',
+          packages: [
+            { name: 'python', version: '3.11' },
+            { name: 'numpy', version: '1.24' },
+            { name: 'pandas', version: '2.0' }
+          ]
+        }
+      ];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  public async getInstalledPackages(environment?: string): Promise<PixiPackage[]> {
+    try {
+      // If no environment specified, use current environment
+      const targetEnv = environment || await this.getCurrentEnvironment();
+      
+      // Get all environments and features
+      const environments = await this.getEnvironmentsWithFeatures();
+      const features = await this.getFeaturesWithPackages();
+      
+      // Find the target environment
+      const targetEnvironment = environments.find(env => env.name === targetEnv);
+      if (!targetEnvironment) {
+        return [];
+      }
+
+      // Collect packages from all features used by this environment
+      const allPackages: PixiPackage[] = [];
+      
+      // Add packages from each feature
+      for (const featureName of targetEnvironment.features) {
+        const feature = features.find(f => f.name === featureName);
+        if (feature) {
+          allPackages.push(...feature.packages);
+        }
+      }
+
+      // If environment inherits from default, add default feature packages
+      if (targetEnvironment.inheritDefault !== false && targetEnv !== 'default') {
+        const defaultFeature = features.find(f => f.isDefault);
+        if (defaultFeature) {
+          allPackages.push(...defaultFeature.packages);
+        }
+      }
+
+      // Remove duplicates (keep first occurrence)
+      const uniquePackages = allPackages.filter((pkg, index, self) => 
+        index === self.findIndex(p => p.name === pkg.name)
+      );
+
+      return uniquePackages;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  public async getFeaturesForEnvironment(environment: string): Promise<PixiFeature[]> {
+    try {
+      const environments = await this.getEnvironmentsWithFeatures();
+      const features = await this.getFeaturesWithPackages();
+      
+      const targetEnvironment = environments.find(env => env.name === environment);
+      if (!targetEnvironment) {
+        return [];
+      }
+
+      return targetEnvironment.features
+        .map(featureName => features.find(f => f.name === featureName))
+        .filter(feature => feature !== undefined) as PixiFeature[];
     } catch (error) {
       return [];
     }
@@ -216,8 +367,75 @@ export class PixiService {
         name: 'demo-pixi-project',
         description: 'A demo pixi project',
         pythonVersion: '3.11',
-        environments: ['default', 'dev', 'test'],
-        packages: ['python', 'numpy', 'pandas'],
+        environments: [
+          {
+            name: 'default',
+            features: ['default'],
+            inheritDefault: false
+          },
+          {
+            name: 'dev',
+            features: ['default', 'dev-tools'],
+            inheritDefault: true
+          },
+          {
+            name: 'test',
+            features: ['default', 'testing'],
+            inheritDefault: true
+          },
+          {
+            name: 'python310',
+            features: ['python310'],
+            inheritDefault: true
+          },
+          {
+            name: 'python311',
+            features: ['python311'],
+            inheritDefault: true
+          }
+        ],
+        features: [
+          {
+            name: 'default',
+            packages: [
+              { name: 'python', version: '3.11' },
+              { name: 'numpy', version: '1.24' },
+              { name: 'pandas', version: '2.0' }
+            ],
+            isDefault: true
+          },
+          {
+            name: 'dev-tools',
+            packages: [
+              { name: 'pytest', version: '7.4' },
+              { name: 'black', version: '23.7' },
+              { name: 'flake8', version: '6.0' }
+            ]
+          },
+          {
+            name: 'testing',
+            packages: [
+              { name: 'pytest', version: '7.4' },
+              { name: 'coverage', version: '7.2' }
+            ]
+          },
+          {
+            name: 'python310',
+            packages: [
+              { name: 'python', version: '3.10' },
+              { name: 'numpy', version: '1.24' },
+              { name: 'pandas', version: '2.0' }
+            ]
+          },
+          {
+            name: 'python311',
+            packages: [
+              { name: 'python', version: '3.11' },
+              { name: 'numpy', version: '1.24' },
+              { name: 'pandas', version: '2.0' }
+            ]
+          }
+        ],
         tasks: ['test', 'build', 'dev', 'shell']
       };
       

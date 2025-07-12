@@ -100,7 +100,7 @@ describe('PixiWidget', () => {
       input.value = 'pytest';
       form.dispatchEvent(new Event('submit'));
       setTimeout(() => {
-        expect(addSpy).toHaveBeenCalledWith('pytest');
+        expect(addSpy).toHaveBeenCalledWith('pytest', 'default');
         done();
       }, 50);
     }, 100);
