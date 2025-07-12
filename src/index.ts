@@ -1,40 +1,39 @@
 import { ICommandPalette, MainAreaWidget } from '@jupyterlab/apputils';
 
-import { Widget } from '@lumino/widgets';
-
 import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
+import { PixiWidget } from './pixi-widget';
 
 /**
- * Initialization data for the jupyterlab_apod extension.
+ * Initialization data for the jupyter-pixi extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab-apod',
-  description: 'Show a random NASA Astronomy Picture of the Day in a JupyterLab panel.',
+  id: 'jupyter-pixi',
+  description: 'A JupyterLab extension for managing pixi projects and environments.',
   autoStart: true,
   requires: [ICommandPalette],
   activate: (app: JupyterFrontEnd, palette: ICommandPalette) => {
-    console.log('JupyterLab extension jupyterlab_apod is activated!');
+    console.log('JupyterLab extension jupyter-pixi is activated!');
 
     // Define a widget creator function,
     // then call it to make a new widget
     const newWidget = () => {
-      // Create a blank content widget inside of a MainAreaWidget
-      const content = new Widget();
+      // Create a PixiWidget inside of a MainAreaWidget
+      const content = new PixiWidget();
       const widget = new MainAreaWidget({ content });
-      widget.id = 'apod-jupyterlab';
-      widget.title.label = 'Astronomy Picture';
+      widget.id = 'pixi-jupyterlab';
+      widget.title.label = 'Pixi Package Manager';
       widget.title.closable = true;
       return widget;
-    }
+    };
     let widget = newWidget();
 
     // Add an application command
-    const command: string = 'apod:open';
+    const command: string = 'pixi:open';
     app.commands.addCommand(command, {
-      label: 'Random Astronomy Picture',
+      label: 'Open Pixi Package Manager',
       execute: () => {
         // Regenerate the widget if disposed
         if (widget.isDisposed) {
@@ -50,7 +49,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     // Add the command to the palette.
-    palette.addItem({ command, category: 'Tutorial' });
+    palette.addItem({ command, category: 'Pixi' });
   }
 };
 

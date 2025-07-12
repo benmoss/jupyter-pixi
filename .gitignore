@@ -127,3 +127,4 @@ dmypy.json
 # pixi environments
 .pixi
 *.egg-info
+junit.xml

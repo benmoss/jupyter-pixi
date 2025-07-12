@@ -1,1 +1,182 @@
-@import url('base.css');
+/*-----------------------------------------------------------------------------
+| Copyright (c) Jupyter Development Team.
+| Distributed under the terms of the Modified BSD License.
+|----------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------
+| Variables
+|----------------------------------------------------------------------------*/
+
+:root {
+  --jp-pixi-primary-color: #007acc;
+  --jp-pixi-secondary-color: #f0f0f0;
+  --jp-pixi-border-color: #e0e0e0;
+  --jp-pixi-text-color: #333;
+  --jp-pixi-success-color: #28a745;
+  --jp-pixi-error-color: #dc3545;
+  --jp-pixi-warning-color: #ffc107;
+}
+
+/*-----------------------------------------------------------------------------
+| Pixi Widget Styles
+|----------------------------------------------------------------------------*/
+
+.jp-pixi-widget {
+  padding: 20px;
+  font-family: var(--jp-ui-font-family);
+  color: var(--jp-pixi-text-color);
+  background: var(--jp-layout-color0);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.jp-pixi-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.jp-pixi-header {
+  margin-bottom: 30px;
+  text-align: center;
+  border-bottom: 2px solid var(--jp-pixi-primary-color);
+  padding-bottom: 15px;
+}
+
+.jp-pixi-header h2 {
+  margin: 0;
+  color: var(--jp-pixi-primary-color);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.jp-pixi-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: var(--jp-layout-color1);
+  border-radius: 8px;
+  border: 1px solid var(--jp-pixi-border-color);
+}
+
+.jp-pixi-section h3 {
+  margin: 0 0 15px 0;
+  color: var(--jp-pixi-primary-color);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.jp-pixi-info-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.jp-pixi-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  border: 1px solid var(--jp-pixi-border-color);
+}
+
+.jp-pixi-info-item label {
+  font-weight: 500;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-info-item span {
+  color: var(--jp-pixi-primary-color);
+  font-weight: 500;
+}
+
+.jp-pixi-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.jp-pixi-button {
+  padding: 10px 20px;
+  background: var(--jp-pixi-primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.jp-pixi-button:hover {
+  background: #005a9e;
+}
+
+.jp-pixi-button:active {
+  background: #004080;
+}
+
+.jp-pixi-button:disabled {
+  background: var(--jp-pixi-border-color);
+  color: #999;
+  cursor: not-allowed;
+}
+
+.jp-pixi-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--jp-pixi-error-color);
+}
+
+.jp-pixi-error h3 {
+  margin: 0 0 15px 0;
+  color: var(--jp-pixi-error-color);
+}
+
+.jp-pixi-error p {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+/* Loading state */
+.jp-pixi-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-loading::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--jp-pixi-border-color);
+  border-radius: 50%;
+  border-top-color: var(--jp-pixi-primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .jp-pixi-widget {
+    padding: 10px;
+  }
+  
+  .jp-pixi-section {
+    padding: 15px;
+  }
+  
+  .jp-pixi-actions {
+    flex-direction: column;
+  }
+  
+  .jp-pixi-button {
+    width: 100%;
+  }
+}
