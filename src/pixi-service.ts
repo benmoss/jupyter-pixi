@@ -115,4 +115,51 @@ export class PixiService {
       throw new Error(`Failed to execute pixi command: ${error}`);
     }
   }
+
+  async getAvailableTasks(): Promise<any[]> {
+    try {
+      // This would read from pixi.toml to get available tasks
+      // For now, return demo tasks
+      return [
+        { name: 'test', description: 'Run tests' },
+        { name: 'build', description: 'Build the project' },
+        { name: 'dev', description: 'Start development server' },
+        { name: 'shell', description: 'Open interactive shell' }
+      ];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async executeTask(taskName: string, onOutput?: (output: string) => void): Promise<void> {
+    try {
+      // Simulate task execution with real-time output
+      if (onOutput) {
+        onOutput(`Starting task: ${taskName}`);
+        onOutput('Initializing environment...');
+        
+        // Simulate some delay and output
+        await new Promise(resolve => setTimeout(resolve, 500));
+        onOutput('Loading dependencies...');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        onOutput('Running task...');
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        onOutput(`Task ${taskName} completed successfully.`);
+      }
+    } catch (error) {
+      throw new Error(`Task execution failed: ${error}`);
+    }
+  }
+
+  async stopCurrentTask(): Promise<void> {
+    try {
+      // This would stop the currently running task
+      console.log('Stopping current task...');
+      return Promise.resolve();
+    } catch (error) {
+      throw new Error(`Failed to stop task: ${error}`);
+    }
+  }
 } 

@@ -23,6 +23,7 @@ export class PixiWidget extends Widget {
     const refreshBtn = this.contentDiv.querySelector('#refresh-btn');
     const environmentsBtn = this.contentDiv.querySelector('#environments-btn');
     const packagesBtn = this.contentDiv.querySelector('#packages-btn');
+    const tasksBtn = this.contentDiv.querySelector('#tasks-btn');
 
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => this.refreshProject());
@@ -32,6 +33,9 @@ export class PixiWidget extends Widget {
     }
     if (packagesBtn) {
       packagesBtn.addEventListener('click', () => this.showPackages());
+    }
+    if (tasksBtn) {
+      tasksBtn.addEventListener('click', () => this.showTasks());
     }
   }
 
@@ -73,6 +77,7 @@ export class PixiWidget extends Widget {
             <button class="jp-pixi-button" id="refresh-btn">Refresh Project</button>
             <button class="jp-pixi-button" id="environments-btn">Manage Environments</button>
             <button class="jp-pixi-button" id="packages-btn">Manage Packages</button>
+            <button class="jp-pixi-button" id="tasks-btn">Run Tasks</button>
           </div>
         </div>
       </div>
@@ -101,6 +106,10 @@ export class PixiWidget extends Widget {
 
   public showPackages(): void {
     this.renderPackageManager();
+  }
+
+  public showTasks(): void {
+    this.renderTaskManager();
   }
 
   private renderPackageManager(): void {
@@ -258,5 +267,118 @@ export class PixiWidget extends Widget {
     // Simulate creating a new environment
     await this.pixiService.executePixiCommand('env', ['create', env]);
     this.renderEnvironmentManager();
+  }
+
+  private renderTaskManager(): void {
+    // Get available tasks from the service
+    this.pixiService.getAvailableTasks().then((tasks: any[]) => {
+      this.contentDiv.innerHTML = `
+        <div class="jp-pixi-header">
+          <h2>Task Execution</h2>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Available Tasks</h3>
+          <div class="jp-pixi-task-list">
+            ${tasks.map((task: any) => `
+              <div class="jp-pixi-task-item">
+                <div class="jp-pixi-task-info">
+                  <span class="jp-pixi-task-name">${task.name}</span>
+                  <span class="jp-pixi-task-description">${task.description}</span>
+                </div>
+                <button class="jp-pixi-run-task-btn" data-task="${task.name}">Run</button>
+              </div>
+            `).join('') || '<p>No tasks found</p>'}
+          </div>
+        </div>
+        <div class="jp-pixi-section">
+          <h3>Task Output</h3>
+          <div class="jp-pixi-task-output" id="jp-pixi-task-output">
+            <div class="jp-pixi-output-placeholder">No task running. Select a task to execute.</div>
+          </div>
+          <div class="jp-pixi-task-controls" id="jp-pixi-task-controls" style="display: none;">
+            <button class="jp-pixi-button jp-pixi-stop-btn" id="jp-pixi-stop-task">Stop Task</button>
+            <button class="jp-pixi-button jp-pixi-clear-btn" id="jp-pixi-clear-output">Clear Output</button>
+          </div>
+        </div>
+        <div class="jp-pixi-section">
+          <button class="jp-pixi-button" id="jp-pixi-back-btn">Back</button>
+        </div>
+      `;
+      this.setupTaskManagerListeners();
+    });
+  }
+
+  private setupTaskManagerListeners(): void {
+    // Run task buttons
+    const runTaskBtns = this.contentDiv.querySelectorAll('.jp-pixi-run-task-btn');
+    runTaskBtns.forEach(btn => {
+      btn.addEventListener('click', (event: Event) => {
+        const taskName = (event.target as HTMLButtonElement).getAttribute('data-task');
+        if (taskName) {
+          this.runTask(taskName);
+        }
+      });
+    });
+
+    // Stop task button
+    const stopBtn = this.contentDiv.querySelector('#jp-pixi-stop-task');
+    if (stopBtn) {
+      stopBtn.addEventListener('click', () => this.stopCurrentTask());
+    }
+
+    // Clear output button
+    const clearBtn = this.contentDiv.querySelector('#jp-pixi-clear-output');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.clearTaskOutput());
+    }
+
+    // Back button
+    const backBtn = this.contentDiv.querySelector('#jp-pixi-back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.loadProjectInfo());
+    }
+  }
+
+  private async runTask(taskName: string): Promise<void> {
+    const outputDiv = this.contentDiv.querySelector('#jp-pixi-task-output');
+    const controlsDiv = this.contentDiv.querySelector('#jp-pixi-task-controls');
+    
+    if (outputDiv) {
+      outputDiv.innerHTML = '<div class="jp-pixi-output-line">Starting task: ' + taskName + '</div>';
+      controlsDiv?.setAttribute('style', 'display: flex; gap: 10px;');
+    }
+
+    // Simulate task execution with real-time output
+    try {
+      await this.pixiService.executeTask(taskName, (output: string) => {
+        this.appendTaskOutput(output);
+      });
+      this.appendTaskOutput('Task completed successfully.');
+    } catch (error) {
+      this.appendTaskOutput('Task failed: ' + error);
+    }
+  }
+
+  private appendTaskOutput(output: string): void {
+    const outputDiv = this.contentDiv.querySelector('#jp-pixi-task-output');
+    if (outputDiv) {
+      const outputLine = document.createElement('div');
+      outputLine.className = 'jp-pixi-output-line';
+      outputLine.textContent = output;
+      outputDiv.appendChild(outputLine);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+  }
+
+  private async stopCurrentTask(): Promise<void> {
+    await this.pixiService.stopCurrentTask();
+    this.appendTaskOutput('Task stopped by user.');
+  }
+
+  private clearTaskOutput(): void {
+    const outputDiv = this.contentDiv.querySelector('#jp-pixi-task-output');
+    if (outputDiv) {
+      outputDiv.innerHTML = '<div class="jp-pixi-output-placeholder">Output cleared.</div>';
+    }
   }
 } 

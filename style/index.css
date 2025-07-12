@@ -292,3 +292,93 @@
   border-radius: 4px;
   font-size: 14px;
 }
+
+.jp-pixi-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jp-pixi-task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--jp-layout-color0);
+  border: 1px solid var(--jp-pixi-border-color);
+  border-radius: 4px;
+}
+
+.jp-pixi-task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jp-pixi-task-name {
+  font-weight: 500;
+  color: var(--jp-pixi-text-color);
+}
+
+.jp-pixi-task-description {
+  font-size: 13px;
+  color: #666;
+}
+
+.jp-pixi-run-task-btn {
+  background: var(--jp-pixi-success-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.jp-pixi-run-task-btn:hover {
+  background: #1e7e34;
+}
+
+.jp-pixi-task-output {
+  background: #1e1e1e;
+  color: #f8f8f2;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  padding: 12px;
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+.jp-pixi-output-line {
+  margin: 2px 0;
+  line-height: 1.4;
+}
+
+.jp-pixi-output-placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+.jp-pixi-task-controls {
+  margin-top: 10px;
+}
+
+.jp-pixi-stop-btn {
+  background: var(--jp-pixi-error-color) !important;
+}
+
+.jp-pixi-stop-btn:hover {
+  background: #a71d2a !important;
+}
+
+.jp-pixi-clear-btn {
+  background: var(--jp-pixi-warning-color) !important;
+  color: #333 !important;
+}
+
+.jp-pixi-clear-btn:hover {
+  background: #e0a800 !important;
+}

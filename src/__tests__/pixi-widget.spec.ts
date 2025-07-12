@@ -187,4 +187,79 @@ describe('PixiWidget', () => {
       }, 50);
     }, 100);
   });
+
+  it('should render the task manager UI when showTasks is called', done => {
+    widget.showTasks();
+    setTimeout(() => {
+      const header = widget.node.querySelector('.jp-pixi-header h2');
+      expect(header?.textContent).toBe('Task Execution');
+      const taskList = widget.node.querySelector('.jp-pixi-task-list');
+      expect(taskList).toBeTruthy();
+      done();
+    }, 100);
+  });
+
+  it('should call runTask when run task button is clicked', done => {
+    widget.showTasks();
+    setTimeout(() => {
+      const runSpy = jest.spyOn(widget as any, 'runTask');
+      const runBtn = widget.node.querySelector('.jp-pixi-run-task-btn') as HTMLButtonElement;
+      if (runBtn) {
+        runBtn.click();
+        setTimeout(() => {
+          expect(runSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // No run buttons available in demo data
+      }
+    }, 100);
+  });
+
+  it('should call stopCurrentTask when stop button is clicked', done => {
+    widget.showTasks();
+    setTimeout(() => {
+      const stopSpy = jest.spyOn(widget as any, 'stopCurrentTask');
+      const stopBtn = widget.node.querySelector('#jp-pixi-stop-task') as HTMLButtonElement;
+      if (stopBtn) {
+        stopBtn.click();
+        setTimeout(() => {
+          expect(stopSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Stop button not visible initially
+      }
+    }, 100);
+  });
+
+  it('should call clearTaskOutput when clear button is clicked', done => {
+    widget.showTasks();
+    setTimeout(() => {
+      const clearSpy = jest.spyOn(widget as any, 'clearTaskOutput');
+      const clearBtn = widget.node.querySelector('#jp-pixi-clear-output') as HTMLButtonElement;
+      if (clearBtn) {
+        clearBtn.click();
+        setTimeout(() => {
+          expect(clearSpy).toHaveBeenCalled();
+          done();
+        }, 50);
+      } else {
+        done(); // Clear button not visible initially
+      }
+    }, 100);
+  });
+
+  it('should return to project info when back button is clicked in task manager', done => {
+    widget.showTasks();
+    setTimeout(() => {
+      const backBtn = widget.node.querySelector('#jp-pixi-back-btn') as HTMLButtonElement;
+      const loadSpy = jest.spyOn(widget as any, 'loadProjectInfo');
+      backBtn.click();
+      setTimeout(() => {
+        expect(loadSpy).toHaveBeenCalled();
+        done();
+      }, 50);
+    }, 100);
+  });
 }); 

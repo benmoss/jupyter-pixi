@@ -67,4 +67,35 @@ describe('PixiService', () => {
     const packages = await (service as any).getInstalledPackages();
     expect(packages).toEqual(['python', 'numpy', 'pandas']);
   });
+
+  it('should get available tasks', async () => {
+    const tasks = await service.getAvailableTasks();
+    expect(tasks).toEqual([
+      { name: 'test', description: 'Run tests' },
+      { name: 'build', description: 'Build the project' },
+      { name: 'dev', description: 'Start development server' },
+      { name: 'shell', description: 'Open interactive shell' }
+    ]);
+  });
+
+  it('should execute a task with output callback', async () => {
+    const outputs: string[] = [];
+    const onOutput = (output: string) => outputs.push(output);
+    
+    await service.executeTask('test', onOutput);
+    
+    expect(outputs).toContain('Starting task: test');
+    expect(outputs).toContain('Initializing environment...');
+    expect(outputs).toContain('Loading dependencies...');
+    expect(outputs).toContain('Running task...');
+    expect(outputs).toContain('Task test completed successfully.');
+  });
+
+  it('should execute a task without output callback', async () => {
+    await expect(service.executeTask('build')).resolves.not.toThrow();
+  });
+
+  it('should stop current task', async () => {
+    await expect(service.stopCurrentTask()).resolves.not.toThrow();
+  });
 }); 
