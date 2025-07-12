@@ -1,3 +1,5 @@
+import { requestAPI } from '@jupyterlab/services';
+
 export interface PixiPackage {
   name: string;
   version?: string;
@@ -443,6 +445,21 @@ export class PixiService {
       return config;
     } catch (error) {
       throw new Error(`Failed to export configuration: ${error}`);
+    }
+  }
+
+  async addPackageToFeature(pkgName: string, featureName: string): Promise<void> {
+    try {
+      const result = await requestAPI<any>('pixi/add-package', {
+        method: 'POST',
+        body: JSON.stringify({ package: pkgName, feature: featureName }),
+      });
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to add package');
+      }
+    } catch (error) {
+      console.error('Failed to add package:', error);
+      throw error;
     }
   }
 } 

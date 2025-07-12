@@ -377,6 +377,11 @@ export class PixiWidget extends Widget {
           <h3>Add Package to ${currentEnv}</h3>
           <form id="jp-pixi-add-package-form">
             <input type="text" id="jp-pixi-add-package-input" placeholder="Package name" required />
+            <select id="jp-pixi-add-feature-select">
+              ${projectInfo.features.map((feature: any) =>
+                `<option value="${feature.name}"${feature.isDefault ? ' selected' : ''}>${feature.name}${feature.isDefault ? ' (default)' : ''}</option>`
+              ).join('')}
+            </select>
             <button type="submit" class="jp-pixi-button">Add Package</button>
           </form>
         </div>
@@ -422,11 +427,15 @@ export class PixiWidget extends Widget {
     // Add package form
     const addForm = this.contentDiv.querySelector('#jp-pixi-add-package-form') as HTMLFormElement;
     if (addForm) {
-      addForm.addEventListener('submit', (event: Event) => {
+      addForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const input = this.contentDiv.querySelector('#jp-pixi-add-package-input') as HTMLInputElement;
-        if (input && input.value.trim() && currentEnv) {
-          this.addPackage(input.value.trim(), currentEnv);
+        const featureSelect = this.contentDiv.querySelector('#jp-pixi-add-feature-select') as HTMLSelectElement;
+        const pkgName = input.value.trim();
+        const featureName = featureSelect.value;
+        if (pkgName && featureName) {
+          await this.pixiService.addPackageToFeature(pkgName, featureName);
+          this.renderPackageManager();
         }
       });
     }
@@ -436,12 +445,6 @@ export class PixiWidget extends Widget {
     if (backBtn) {
       backBtn.addEventListener('click', () => this.loadProjectInfo());
     }
-  }
-
-  private async addPackage(pkg: string, env: string): Promise<void> {
-    // Simulate adding a package to a specific environment
-    await this.pixiService.executePixiCommand('add', [pkg, `--env`, env]);
-    this.renderPackageManager();
   }
 
   private async removePackage(pkg: string, env: string): Promise<void> {

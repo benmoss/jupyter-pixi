@@ -14,3 +14,13 @@ def _jupyter_labextension_paths():
         "src": "labextension",
         "dest": "jupyter-pixi"
     }]
+
+def _jupyter_server_extension_points():
+    return [{
+        "module": "jupyter_pixi"
+    }]
+
+def _load_jupyter_server_extension(server_app):
+    from .handlers import setup_handlers
+    setup_handlers(server_app.web_app)
+    server_app.log.info("Registered Pixi server extension handlers.")
