@@ -29,8 +29,11 @@ class PixiAddPackageHandler(APIHandler):
             self.finish(json.dumps({'success': False, 'error': str(e)}))
 
 def setup_handlers(web_app):
-    host_pattern = '.*$'
-    base_url = web_app.settings.get('base_url', '/')
-    route_pattern = url_path_join(base_url, 'pixi', 'add-package')
-    handlers = [(route_pattern, PixiAddPackageHandler)]
-    web_app.add_handlers(host_pattern, handlers) 
+    host_pattern = ".*$"
+
+    base_url = web_app.settings["base_url"]
+    handlers = []
+    for route in ["add-package"]:
+        route_pattern = url_path_join(base_url, "jupyter-pixi", route)
+        handlers += [(route_pattern, PixiAddPackageHandler)]
+    web_app.add_handlers(host_pattern, handlers)

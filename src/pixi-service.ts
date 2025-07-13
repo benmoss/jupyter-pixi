@@ -1,4 +1,4 @@
-import { requestAPI } from '@jupyterlab/services';
+import { requestAPI } from './util';
 
 export interface PixiPackage {
   name: string;
@@ -150,11 +150,7 @@ export class PixiService {
           packages: [
             { name: 'python', version: '3.11' },
             { name: 'numpy', version: '1.24' },
-            { name: 'pandas', version: '2.0' },
-            { name: 'scipy', version: '1.10' },
-            { name: 'matplotlib', version: '3.7' },
-            { name: 'seaborn', version: '0.12' },
-            { name: 'requests', version: '2.31' }
+            { name: 'pandas', version: '2.0' }
           ],
           isDefault: true
         },
@@ -450,7 +446,7 @@ export class PixiService {
 
   async addPackageToFeature(pkgName: string, featureName: string): Promise<void> {
     try {
-      const result = await requestAPI<any>('pixi/add-package', {
+      const result = await requestAPI<any>('add-package', {
         method: 'POST',
         body: JSON.stringify({ package: pkgName, feature: featureName }),
       });

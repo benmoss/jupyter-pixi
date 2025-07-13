@@ -94,10 +94,12 @@ describe('PixiWidget', () => {
   it('should call addPackage when add form is submitted', done => {
     widget.showPackages();
     setTimeout(() => {
-      const addSpy = jest.spyOn(widget as any, 'addPackage');
+      const addSpy = jest.spyOn(widget['pixiService'], 'addPackageToFeature').mockResolvedValue(undefined);
       const input = widget.node.querySelector('#jp-pixi-add-package-input') as HTMLInputElement;
       const form = widget.node.querySelector('#jp-pixi-add-package-form') as HTMLFormElement;
+      const select = widget.node.querySelector('#jp-pixi-add-feature-select') as HTMLSelectElement;
       input.value = 'pytest';
+      select.value = 'default';
       form.dispatchEvent(new Event('submit'));
       setTimeout(() => {
         expect(addSpy).toHaveBeenCalledWith('pytest', 'default');

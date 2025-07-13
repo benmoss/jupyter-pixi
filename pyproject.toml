@@ -23,6 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
+    "jupyter_server>=2.4.0,<3"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
@@ -39,6 +40,7 @@ exclude = [".github", "binder"]
 [tool.hatch.build.targets.wheel.shared-data]
 "jupyter_pixi/labextension" = "share/jupyter/labextensions/jupyter-pixi"
 "install.json" = "share/jupyter/labextensions/jupyter-pixi/install.json"
+"jupyter-config/server-config" = "etc/jupyter/jupyter_server_config.d"
 
 [tool.hatch.build.hooks.version]
 path = "jupyter_pixi/_version.py"
@@ -86,8 +88,12 @@ jupyter_pixi = { path = ".", editable = true }
 [tool.pixi.tasks]
 
 [tool.pixi.dependencies]
-jupyterlab = "4.*"
-nodejs = "20.*"
-git = ">=2.49.0,<3"
-copier = "9.*"
-jinja2-time = ">=0.2.0,<0.3"
+nodejs = ">=24.4.0,<24.5"
+jupyter_server = ">=2.4.0,<3"
+
+[tool.pixi.feature.dev.dependencies]
+jupyterlab = "*"
+nodejs = "*"
+
+[tool.pixi.environments]
+dev = ["dev"]

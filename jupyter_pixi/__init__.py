@@ -7,6 +7,7 @@ except ImportError:
     import warnings
     warnings.warn("Importing 'jupyter_pixi' outside a proper installation.")
     __version__ = "dev"
+from .handlers import setup_handlers
 
 
 def _jupyter_labextension_paths():
@@ -21,6 +22,6 @@ def _jupyter_server_extension_points():
     }]
 
 def _load_jupyter_server_extension(server_app):
-    from .handlers import setup_handlers
     setup_handlers(server_app.web_app)
-    server_app.log.info("Registered Pixi server extension handlers.")
+    name = "jupyter_pixi"
+    server_app.log.info(f"Registered {name} server extension")
