@@ -128,3 +128,4 @@ dmypy.json
 .pixi
 *.egg-info
 junit.xml
+*.ipynb
