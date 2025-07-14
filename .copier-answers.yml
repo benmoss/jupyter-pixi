@@ -1,0 +1,14 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.3.8
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: ben@mossity.com
+author_name: Ben Moss
+has_binder: true
+has_settings: false
+kind: frontend
+labextension_name: jupyter-pixi
+project_short_description: A JupyterLab extension.
+python_name: jupyter_pixi
+repository: https://github.com/benmoss/jupyter-pixi
+test: true
+
