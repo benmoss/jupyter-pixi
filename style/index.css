@@ -1,11 +1,4 @@
-/*-----------------------------------------------------------------------------
-| Copyright (c) Jupyter Development Team.
-| Distributed under the terms of the Modified BSD License.
-|----------------------------------------------------------------------------*/
-
-/*-----------------------------------------------------------------------------
-| Variables
-|----------------------------------------------------------------------------*/
+/* Variables */
 
 :root {
   --jp-pixi-primary-color: #007acc;
@@ -17,9 +10,7 @@
   --jp-pixi-warning-color: #ffc107;
 }
 
-/*-----------------------------------------------------------------------------
-| Pixi Widget Styles
-|----------------------------------------------------------------------------*/
+/* Pixi Widget Styles */
 
 .jp-pixi-widget {
   padding: 20px;
@@ -58,7 +49,7 @@
 }
 
 .jp-pixi-section h3 {
-  margin: 0 0 15px 0;
+  margin: 0 0 15px;
   color: var(--jp-pixi-primary-color);
   font-size: 18px;
   font-weight: 500;
@@ -128,12 +119,12 @@
 }
 
 .jp-pixi-error h3 {
-  margin: 0 0 15px 0;
+  margin: 0 0 15px;
   color: var(--jp-pixi-error-color);
 }
 
 .jp-pixi-error p {
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
   font-size: 16px;
 }
 
@@ -163,19 +154,19 @@
 }
 
 /* Responsive design */
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .jp-pixi-widget {
     padding: 10px;
   }
-  
+
   .jp-pixi-section {
     padding: 15px;
   }
-  
+
   .jp-pixi-actions {
     flex-direction: column;
   }
-  
+
   .jp-pixi-button {
     width: 100%;
   }
@@ -343,7 +334,7 @@
 .jp-pixi-task-output {
   background: #1e1e1e;
   color: #f8f8f2;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: Monaco, Menlo, 'Ubuntu Mono', monospace;
   font-size: 13px;
   padding: 12px;
   border-radius: 4px;
@@ -596,9 +587,10 @@
   cursor: pointer;
   transition: background 0.2s;
   outline: none;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: rgb(0 0 0 / 4%) 0 1px 2px;
 }
 
-.jp-pixi-toggle-btn:hover, .jp-pixi-toggle-btn:focus {
+.jp-pixi-toggle-btn:hover,
+.jp-pixi-toggle-btn:focus {
   background: var(--jp-pixi-primary-hover, #1565c0);
 }
